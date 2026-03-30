@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { font-family: Arial; background:#0b1a2f; color:white; margin:0; }
+.container { padding:20px; text-align:center; }
+
+input, select {
+  width:90%; padding:10px; margin:5px;
+  border-radius:8px; border:none;
+}
+
+button {
+  padding:12px; margin-top:10px;
+  border:none; border-radius:8px;
+  background:#ffd700; color:black;
+  font-weight:bold;
+}
+
+.card {
+  background:#12284a;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="login" class="container">
+  <h2>🔐 Login</h2>
+  <input id="user" placeholder="Usuário"><br>
+  <input id="pass" type="password" placeholder="Senha"><br>
+  <button onclick="logar()">Entrar</button>
+</div>
+
+<div id="app" class="container" style="display:none">
+
+  <h2>📖 Portal da Igreja</h2>
+
+  <input id="nome" placeholder="Nome">
+  <input id="data" placeholder="Data">
+  <input id="ministerio" placeholder="Ministério">
+  <input id="funcao" placeholder="Função">
+
+  <button onclick="salvar()">➕ Adicionar</button>
+
+  <div id="lista"></div>
+
+  <button onclick="abrirWhats()">📲 Avisar WhatsApp</button>
+
+</div>
+
+<script>
+
+function logar() {
+  let u = document.getElementById("user").value;
+  let s = document.getElementById("pass").value;
+
+  google.script.run.withSuccessHandler(function(ok){
+    if(ok){
+      document.getElementById("login").style.display="none";
+      document.getElementById("app").style.display="block";
+      carregar();
+    } else {
+      alert("Login errado");
+    }
+  }).login(u,s);
+}
+
+function carregar(){
+  google.script.run.withSuccessHandler(function(dados){
+    let html = "";
+    dados.slice(1).forEach(l => {
+      html += `
+        <div class="card">
+          <b>${l[2]}</b><br>
+          ${l[1]} - ${l[3]} (${l[4]})
+          <br>
+          <button onclick="excluir(${l[0]})">Excluir</button>
+        </div>
+      `;
+    });
+    document.getElementById("lista").innerHTML = html;
+  }).getDados();
+}
+
+function salvar(){
+  let id = Date.now();
+  let data = document.getElementById("data").value;
+  let nome = document.getElementById("nome").value;
+  let min = document.getElementById("ministerio").value;
+  let func = document.getElementById("funcao").value;
+
+  google.script.run.adicionar([id,data,nome,min,func]);
+  carregar();
+}
+
+function excluir(id){
+  google.script.run.excluir(id);
+  carregar();
+}
+
+function abrirWhats(){
+  google.script.run.withSuccessHandler(link => window.open(link)).gerarLinkWhats();
+}
+
+</script>
+
+</body>
+</html>
