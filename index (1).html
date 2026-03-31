@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Igreja Pro - ADM</title>
+    <style>
+        :root { --p: #2563eb; --bg: #f8fafc; --txt: #1e293b; --adm: #dc2626; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--txt); margin: 0; padding-bottom: 50px; }
+        header { background: var(--p); color: white; padding: 15px; text-align: center; font-weight: bold; position: relative; }
+        
+        .admin-lock { position: absolute; right: 10px; top: 12px; background: rgba(0,0,0,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; }
+        
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h2 { font-size: 1.1rem; color: var(--p); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        
+        .row { display: flex; align-items: center; margin-bottom: 10px; }
+        .row label { flex: 1; font-size: 0.85rem; font-weight: bold; color: #64748b; }
+        input { flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none; background: #fdfdfd; }
+        input:disabled { background: #f1f5f9; border: transparent; color: #1e293b; font-weight: 600; }
+        
+        textarea { width: 100%; height: 100px; border: 1px solid #ddd; border-radius: 5px; padding: 8px; box-sizing: border-box; }
+        textarea:disabled { background: #f1f5f9; border: transparent; }
+
+        .btn-save { 
+            display: none; background: #10b981; color: white; border: none; padding: 15px; 
+            width: 100%; border-radius: 8px; font-size: 1rem; font-weight: bold; 
+            cursor: pointer; margin-top: 10px;
+        }
+        
+        .status-badge { text-align: center; font-size: 0.7rem; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
+        .mode-view { color: #64748b; }
+        .mode-edit { color: var(--adm); }
+    </style>
+</head>
+<body>
+
+<header>
+    Escala e Avisos
+    <button class="admin-lock" onclick="toggleAdmin()">🔓 EDITAR</button>
+</header>
+
+<div class="container">
+    <div id="status" class="status-badge mode-view">Modo: Apenas Leitura</div>
+
+    <div class="card">
+        <h2>🎸 Instrumental</h2>
+        <div class="row"><label>Violão:</label><input type="text" id="violao" disabled></div>
+        <div class="row"><label>Guitarra:</label><input type="text" id="guitarra" disabled></div>
+        <div class="row"><label>Teclado:</label><input type="text" id="teclado" disabled></div>
+        <div class="row"><label>Baixo:</label><input type="text" id="baixo" disabled></div>
+        <div class="row"><label>Bateria:</label><input type="text" id="bateria" disabled></div>
+    </div>
+
+    <div class="card">
+        <h2>🎤 Vocal</h2>
+        <div class="row"><label>Voz Principal:</label><input type="text" id="voz_principal" disabled></div>
+        <div class="row"><label>Backing 1:</label><input type="text" id="backing1" disabled></div>
+        <div class="row"><label>Backing 2:</label><input type="text" id="backing2" disabled></div>
+        <div class="row"><label>Backing 3:</label><input type="text" id="backing3" disabled></div>
+        <div class="row"><label>Backing 4:</label><input type="text" id="backing4" disabled></div>
+    </div>
+
+    <div class="card">
+        <h2>💻 Mídia e Som</h2>
+        <div class="row"><label>Som / P.A:</label><input type="text" id="som" disabled></div>
+        <div class="row"><label>Projeção:</label><input type="text" id="projecao" disabled></div>
+        <div class="row"><label>Mídia Social:</label><input type="text" id="midia_social" disabled></div>
+        <div class="row"><label>Transmissão:</label><input type="text" id="transmissao" disabled></div>
+    </div>
+
+    <div class="card">
+        <h2>📢 Avisos da Semana</h2>
+        <textarea id="avisos" disabled placeholder="Nenhum aviso para esta semana."></textarea>
+    </div>
+
+    <button id="btnSave" class="btn-save" onclick="salvarDados()">💾 SALVAR ALTERAÇÕES</button>
+</div>
+
+<script>
+    const campos = [
+        'violao', 'guitarra', 'teclado', 'baixo', 'bateria', 
+        'voz_principal', 'backing1', 'backing2', 'backing3', 'backing4',
+        'som', 'projecao', 'midia_social', 'transmissao', 'avisos'
+    ];
+
+    const SENHA_ADM = "1234"; // VOCÊ PODE MUDAR A SENHA AQUI
+
+    window.onload = function() {
+        carregarDados();
+    };
+
+    function carregarDados() {
+        campos.forEach(id => {
+            const valor = localStorage.getItem(id);
+            if (valor) document.getElementById(id).value = valor;
+        });
+    }
+
+    function toggleAdmin() {
+        const senha = prompt("Digite a senha para habilitar edição:");
+        if (senha === SENHA_ADM) {
+            habilitarEdicao(true);
+            alert("Modo administrador ativado!");
+        } else {
+            alert("Senha incorreta!");
+        }
+    }
+
+    function habilitarEdicao(status) {
+        campos.forEach(id => {
+            document.getElementById(id).disabled = !status;
+        });
+        document.getElementById('btnSave').style.display = status ? 'block' : 'none';
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerText = status ? "Modo: Administrador (Editando)" : "Modo: Apenas Leitura";
+        statusDiv.className = status ? "status-badge mode-edit" : "status-badge mode-view";
+    }
+
+    function salvarDados() {
+        campos.forEach(id => {
+            localStorage.setItem(id, document.getElementById(id).value);
+        });
+        habilitarEdicao(false);
+        alert("✅ Escala salva com sucesso!");
+    }
+</script>
+
+</body>
+</html>
